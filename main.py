@@ -6,15 +6,15 @@ import cv2
 import numpy as np
 # Global Variables for the game
 FPS = 30
-SCREEN_WIDTH = 980
+SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 520
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 GROUNDY = SCREEN_HEIGHT
 GAME_SPRITES = {}
 GAME_SOUNDS = {}
-PLAYER = 'gallery/sprites/bird1.png'
-BACKGROUND = 'gallery/sprites/mural.jpg'
-PIPE = 'gallery/sprites/pipe.png'
+PLAYER = 'gallery/sprites/PALOMA1.png'
+BACKGROUND = 'gallery/sprites/FONDOMURAL.jpg'
+PIPE = 'gallery/sprites/columna.png'
 captura = cv2.VideoCapture(0)
 
 def welcomeScreen():
@@ -68,7 +68,7 @@ def mainGame():
     player_min_vel_y = -8
     player_acc_y = 1
 
-    playerFlapAccv = -8  # velocity while flapping
+    playerFlapAccv = -10  # velocity while flapping
     playerFlapped = False  # It is true only when the bird is flapping
 
     while True:
