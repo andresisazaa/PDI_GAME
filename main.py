@@ -11,10 +11,9 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 GROUNDY = SCREEN_HEIGHT
 GAME_SPRITES = {}
 GAME_SOUNDS = {}
-PLAYER = 'gallery/sprites/bird1.png'
+PLAYER = 'gallery/sprites/paloma.png'
 BACKGROUND = 'gallery/sprites/fuente.png'
 PIPE = 'gallery/sprites/pipe.png'
-
 
 def welcomeScreen():
     player_x = int(SCREEN_WIDTH / 5)
@@ -64,8 +63,6 @@ def mainGame():
     player_vel_y = -9
     player_vel_x = 10
     player_max_vel_y = 10
-    player_min_vel_y = -8
-    player_acc_y = 1
 
     playerFlapAccv = -8  # velocity while flapping
     playerFlapped = False  # It is true only when the bird is flapping
@@ -76,24 +73,24 @@ def mainGame():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-            # keys = pygame.key.get_pressed()
-            # if keys[K_UP]:
-            #     if player_y > 0:
+            keys = pygame.key.get_pressed()
+            if keys[K_UP]:
+                if player_y > 0:
+                        player_y -= 10
+            if keys[K_DOWN]:
+                if player_y > 0:
+                        player_y += 10
+            # if event.type == KEYDOWN: 
+            #     if event.key == K_UP:
+            #         if player_y > 0:
             #             player_y -= 5
-            # if keys[K_DOWN]:
-            #     if player_y > 0:
+            #             player_vel_y = playerFlapAccv
+            #             playerFlapped = True
+            #     if event.key == K_DOWN:
+            #         if player_y > 0:
             #             player_y += 5
-            if event.type == KEYDOWN: 
-                if event.key == K_UP:
-                    if player_y > 0:
-                        player_y -= 5
-                        player_vel_y = playerFlapAccv
-                        playerFlapped = True
-                if event.key == K_DOWN:
-                    if player_y > 0:
-                        player_y += 5
-                        player_vel_y = playerFlapAccv
-                        playerFlapped = True
+            #             player_vel_y = playerFlapAccv
+            #             playerFlapped = True
                 
         is_crashed = isCollide(player_x, player_y, upper_pipes, lower_pipes)
         if is_crashed:
@@ -106,12 +103,6 @@ def mainGame():
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
                 GAME_SOUNDS['point'].play()
-        if player_vel_y < player_max_vel_y and not playerFlapped:
-            player_vel_y += player_acc_y
-        if playerFlapped:
-            playerFlapped = False
-        playerHeight = GAME_SPRITES['player'].get_height()
-        # player_y = player_y + min(player_vel_y, GROUNDY - player_y - playerHeight)
 
         # move pipes to the left
         for upper_pipe, lower_pipe in zip(upper_pipes, lower_pipes):

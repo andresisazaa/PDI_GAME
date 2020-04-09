@@ -21,7 +21,7 @@ while(1):
     # Encontrar el area de los objetos que detecta la camara
     moments = cv2.moments(mask)
     area = moments['m00']
-    print('area', area)
+    # print('area', area)
 
     # Descomentar para ver el area por pantalla
     # print area
