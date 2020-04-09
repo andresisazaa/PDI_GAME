@@ -2,19 +2,20 @@ import random
 import sys
 import pygame
 from pygame.locals import *
-
+import cv2
+import numpy as np
 # Global Variables for the game
 FPS = 30
-SCREEN_WIDTH = 300
-SCREEN_HEIGHT = 450
+SCREEN_WIDTH = 980
+SCREEN_HEIGHT = 520
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 GROUNDY = SCREEN_HEIGHT
 GAME_SPRITES = {}
 GAME_SOUNDS = {}
 PLAYER = 'gallery/sprites/bird1.png'
-BACKGROUND = 'gallery/sprites/fuente.png'
+BACKGROUND = 'gallery/sprites/mural.jpg'
 PIPE = 'gallery/sprites/pipe.png'
-
+captura = cv2.VideoCapture(0)
 
 def welcomeScreen():
     player_x = int(SCREEN_WIDTH / 5)
@@ -30,7 +31,7 @@ def welcomeScreen():
                 sys.exit()
 
             # If the user presses space or up key, start the game for them
-            elif event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+            elif event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP): 
                 return
             else:
                 SCREEN.blit(GAME_SPRITES['background'], (0, 0))
@@ -71,30 +72,37 @@ def mainGame():
     playerFlapped = False  # It is true only when the bird is flapping
 
     while True:
+       
         print(f'X: {player_x}, Y: {player_y}')
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            # keys = pygame.key.get_pressed()
-            # if keys[K_UP]:
-            #     if player_y > 0:
-            #             player_y -= 5
-            # if keys[K_DOWN]:
-            #     if player_y > 0:
-            #             player_y += 5
-            if event.type == KEYDOWN: 
-                if event.key == K_UP:
-                    if player_y > 0:
-                        player_y -= 5
-                        player_vel_y = playerFlapAccv
-                        playerFlapped = True
-                if event.key == K_DOWN:
-                    if player_y > 0:
-                        player_y += 5
-                        player_vel_y = playerFlapAccv
-                        playerFlapped = True
-                
+        _, imagen = captura.read()
+        hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV)
+
+    # Establecemos el rango de colores que vamos a detectar
+    # En este caso de azul oscuro a azul-azulado claro
+        azul_bajos = np.array([105, 155, 20], dtype=np.uint8)
+        azul_altos = np.array([123, 255, 255], dtype=np.uint8)
+
+    # Crear una mascara con solo los pixeles dentro del rango de azuls
+        mask = cv2.inRange(hsv, azul_bajos, azul_altos)
+
+          # Encontrar el area de los objetos que detecta la camara
+        moments = cv2.moments(mask)
+        area = moments['m00']
+        if(area > 2000000):
+
+        # Buscamos el centro x, y del objeto
+            x = int(moments['m10']/moments['m00'])
+            player_y = int(moments['m01']/moments['m00'])
+
+        # Mostramos sus coordenadas por pantalla
+            print("x = ", x)
+            print("y = ", player_y)
+
+        # Dibujamos una marca en el centro del objeto
+            cv2.rectangle(imagen, (x, player_y), (x+2, player_y+2), (0, 0, 255), 2)
+        
+        # cv2.imshow('mask', mask)   
+        # cv2.imshow('Camara', imagen)    
         is_crashed = isCollide(player_x, player_y, upper_pipes, lower_pipes)
         if is_crashed:
             return
