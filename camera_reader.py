@@ -30,8 +30,7 @@ while(1):
         y = int(moments['m01']/moments['m00'])
 
         # Mostramos sus coordenadas por pantalla
-        print("x = ", x)
-        print("y = ", y)
+        print(f"X: {x}, Y: {y}")
 
         # Dibujamos una marca en el centro del objeto
         cv2.rectangle(imagen, (x, y), (x+2, y+2), (0, 0, 255), 2)

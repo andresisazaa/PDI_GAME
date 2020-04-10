@@ -13,9 +13,9 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 GROUNDY = SCREEN_HEIGHT
 GAME_SPRITES = {}
 GAME_SOUNDS = {}
-PLAYER = 'gallery/sprites/PALOMA1.png'
-BACKGROUND = 'gallery/sprites/FONDOMURAL.jpg'
-COLUMN = 'gallery/sprites/columna.png'
+PLAYER = 'assets/sprites/PALOMA1.png'
+BACKGROUND = 'assets/sprites/FONDOMURAL.jpg'
+COLUMN = 'assets/sprites/columna.png'
 captura = cv2.VideoCapture(0)
 
 #Función que muestra la pantalla inicial
@@ -171,21 +171,21 @@ if __name__ == "__main__":
     FPSCLOCK = pygame.time.Clock()
     pygame.display.set_caption('Flappy Dove UdeA')
     GAME_SPRITES['numbers'] = (
-        pygame.image.load('gallery/sprites/0.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/1.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/2.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/3.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/4.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/5.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/6.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/7.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/8.png').convert_alpha(),
-        pygame.image.load('gallery/sprites/9.png').convert_alpha())
+        pygame.image.load('assets/sprites/0.png').convert_alpha(),
+        pygame.image.load('assets/sprites/1.png').convert_alpha(),
+        pygame.image.load('assets/sprites/2.png').convert_alpha(),
+        pygame.image.load('assets/sprites/3.png').convert_alpha(),
+        pygame.image.load('assets/sprites/4.png').convert_alpha(),
+        pygame.image.load('assets/sprites/5.png').convert_alpha(),
+        pygame.image.load('assets/sprites/6.png').convert_alpha(),
+        pygame.image.load('assets/sprites/7.png').convert_alpha(),
+        pygame.image.load('assets/sprites/8.png').convert_alpha(),
+        pygame.image.load('assets/sprites/9.png').convert_alpha())
 
     GAME_SPRITES['column'] = (pygame.transform.rotate(pygame.image.load(
         COLUMN).convert_alpha(), 180), pygame.image.load(COLUMN).convert_alpha())
-    GAME_SOUNDS['hit'] = pygame.mixer.Sound('gallery/audio/hit.wav')
-    GAME_SOUNDS['point'] = pygame.mixer.Sound('gallery/audio/point.wav')
+    GAME_SOUNDS['hit'] = pygame.mixer.Sound('assets/audio/hit.wav')
+    GAME_SOUNDS['point'] = pygame.mixer.Sound('assets/audio/point.wav')
     GAME_SPRITES['background'] = pygame.image.load(BACKGROUND).convert()
     GAME_SPRITES['player'] = pygame.image.load(PLAYER).convert_alpha()
 
