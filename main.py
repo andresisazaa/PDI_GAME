@@ -4,8 +4,9 @@ import pygame
 from pygame.locals import *
 import cv2
 import numpy as np
-# Global Variables for the game
-FPS = 30
+
+# Variables Globales del juego
+FPS = 60
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 500
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -14,23 +15,23 @@ GAME_SPRITES = {}
 GAME_SOUNDS = {}
 PLAYER = 'gallery/sprites/PALOMA1.png'
 BACKGROUND = 'gallery/sprites/FONDOMURAL.jpg'
-PIPE = 'gallery/sprites/columna.png'
+COLUMN = 'gallery/sprites/columna.png'
 captura = cv2.VideoCapture(0)
 
-
-def welcomeScreen():
+#Función que muestra la pantalla inicial
+def welcome_screen():
     player_x = int(SCREEN_WIDTH / 5)
     player_y = int((SCREEN_HEIGHT - GAME_SPRITES['player'].get_height()) / 2)
 
     while True:
         for event in pygame.event.get():
-            # if user clicks on cross button, close the game
+            # Eventos para cerrar el juego
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
 
-            # If the user presses space or up key, start the game for them
-            elif event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+            # Barra espaciadora para iniciar el juego
+            elif event.type == KEYDOWN and event.key == K_SPACE:
                 return
             else:
                 SCREEN.blit(GAME_SPRITES['background'], (0, 0))
@@ -38,33 +39,26 @@ def welcomeScreen():
                 pygame.display.update()
                 FPSCLOCK.tick(FPS)
 
-
-def mainGame():
+#Función loop que ejecuta el juego
+def main_game():
     score = 0
+    column_vel_x = -8
+    player_vel_y = 5
     player_x = int(SCREEN_WIDTH / 5)
     player_y = int(SCREEN_WIDTH / 2)
+    new_column1 = get_random_column()
+    new_column2 = get_random_column()
 
-    # Create 2 pipes for blitting on the screen
-    newPipe1 = getRandomPipe()
-    newPipe2 = getRandomPipe()
-
-    # my List of upper pipes
-    upper_pipes = [
-        {'x': SCREEN_WIDTH + 150, 'y': newPipe1[0]['y']},
-        {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': newPipe2[0]['y']}
+    upper_columns = [
+        {'x': SCREEN_WIDTH + 150, 'y': new_column1[0]['y']},
+        {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': new_column2[0]['y']}
     ]
-    # my List of lower pipes
-    lower_pipes = [
-        {'x': SCREEN_WIDTH + 150, 'y': newPipe1[1]['y']},
-        {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': newPipe2[1]['y']}
+    lower_columns = [
+        {'x': SCREEN_WIDTH + 150, 'y': new_column1[1]['y']},
+        {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': new_column2[1]['y']}
     ]
-
-    pipe_vel_x = -9
-    player_vel_y = 5
 
     while True:
-
-        print(f'X: {player_x}, Y: {player_y}')
         _, imagen = captura.read()
         hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV)
 
@@ -80,106 +74,101 @@ def mainGame():
         moments = cv2.moments(mask)
         area = moments['m00']
         if(area > 2000000):
-
             # Buscamos el centro x, y del objeto
             x = int(moments['m10']/moments['m00'])
-            player_y = int(moments['m01']/moments['m00'])
+            y = int(moments['m01']/moments['m00'])
+            player_y = y
+            # Dibujamos una marca en el centro del objeto
+            cv2.rectangle(imagen, (x, player_y), (x+2, player_y+2), (0, 0, 255), 2)
 
-        # Mostramos sus coordenadas por pantalla
-            print("x = ", x)
-            print("y = ", player_y)
-
-        # Dibujamos una marca en el centro del objeto
-            cv2.rectangle(imagen, (x, player_y),
-                          (x+2, player_y+2), (0, 0, 255), 2)
-
-        # cv2.imshow('mask', mask)
-        # cv2.imshow('Camara', imagen)
-        is_crashed = isCollide(player_x, player_y, upper_pipes, lower_pipes)
+        is_crashed = check_collide(player_x, player_y, upper_columns, lower_columns)
         if is_crashed:
             return
 
         # check for score
-        playerMidPos = player_x + GAME_SPRITES['player'].get_width() / 2
-        for pipe in upper_pipes:
-            pipeMidPos = pipe['x'] + GAME_SPRITES['pipe'][0].get_width() / 2
-            if pipeMidPos <= playerMidPos < pipeMidPos + 4:
+        player_mid_pos = player_x + GAME_SPRITES['player'].get_width() / 2
+        for column in upper_columns:
+            column_mid_pos = column['x'] + GAME_SPRITES['column'][0].get_width() / 2
+            if column_mid_pos <= player_mid_pos < column_mid_pos + 4:
                 score += 1
                 GAME_SOUNDS['point'].play()
-        playerHeight = GAME_SPRITES['player'].get_height()
-        player_y = player_y + min(player_vel_y, GROUNDY - player_y - playerHeight)
+        player_height = GAME_SPRITES['player'].get_height()
+        player_y = player_y + player_vel_y
 
-        # move pipes to the left
-        for upper_pipe, lower_pipe in zip(upper_pipes, lower_pipes):
-            upper_pipe['x'] += pipe_vel_x
-            lower_pipe['x'] += pipe_vel_x
+        # move columns to the left
+        for upper_column, lower_column in zip(upper_columns, lower_columns):
+            upper_column['x'] += column_vel_x
+            lower_column['x'] += column_vel_x
 
-        # Add a new pipe when the first is about to cross the leftmost part of the screen
-        if 0 < upper_pipes[0]['x'] < abs(pipe_vel_x) + 1:
-            newpipe = getRandomPipe()
-            upper_pipes.append(newpipe[0])
-            lower_pipes.append(newpipe[1])
+        # Add a new column when the first is about to cross the leftmost part of the screen
+        if 0 < upper_columns[0]['x'] < abs(column_vel_x) + 1:
+            newcolumn = get_random_column()
+            upper_columns.append(newcolumn[0])
+            lower_columns.append(newcolumn[1])
 
-        # if the pipe is out of the screen, remove it
-        if upper_pipes[0]['x'] < -GAME_SPRITES['pipe'][0].get_width():
-            upper_pipes.pop(0)
-            lower_pipes.pop(0)
+        # if the column is out of the screen, remove it
+        if upper_columns[0]['x'] < -GAME_SPRITES['column'][0].get_width():
+            upper_columns.pop(0)
+            lower_columns.pop(0)
 
         # Lets blit our sprites now
         SCREEN.blit(GAME_SPRITES['background'], (0, 0))
-        for upper_pipe, lower_pipe in zip(upper_pipes, lower_pipes):
-            SCREEN.blit(GAME_SPRITES['pipe'][0],
-                        (upper_pipe['x'], upper_pipe['y']))
-            SCREEN.blit(GAME_SPRITES['pipe'][1],
-                        (lower_pipe['x'], lower_pipe['y']))
+        for upper_column, lower_column in zip(upper_columns, lower_columns):
+            SCREEN.blit(GAME_SPRITES['column'][0],
+                        (upper_column['x'], upper_column['y']))
+            SCREEN.blit(GAME_SPRITES['column'][1],
+                        (lower_column['x'], lower_column['y']))
 
         SCREEN.blit(GAME_SPRITES['player'], (player_x, player_y))
-        myDigits = [int(x) for x in list(str(score))]
+        my_digits = [int(x) for x in list(str(score))]
         width = 0
-        for digit in myDigits:
+        for digit in my_digits:
             width += GAME_SPRITES['numbers'][digit].get_width()
         x_offset = (SCREEN_WIDTH - width) / 2
 
-        for digit in myDigits:
+        for digit in my_digits:
             SCREEN.blit(GAME_SPRITES['numbers'][digit],
                         (x_offset, SCREEN_HEIGHT * 0.12))
             x_offset += GAME_SPRITES['numbers'][digit].get_width()
         pygame.display.update()
         FPSCLOCK.tick(FPS)
 
-
-def isCollide(player_x, player_y, upper_pipes, lower_pipes):
+#Esta función se encarga de verificar si el jugador no ha colisionado con algún elemento
+def check_collide(player_x, player_y, upper_columns, lower_columns):
+    #Verifica la colisión con el piso o el techo
     if player_y >= GROUNDY - 40 or player_y < 0:
         GAME_SOUNDS['hit'].play()
         return True
-    for pipe in upper_pipes:
-        pipe_height = GAME_SPRITES['pipe'][0].get_height()
-        if(player_y < pipe_height + pipe['y'] and abs(player_x - pipe['x']) < GAME_SPRITES['pipe'][0].get_width()):
+    for column in upper_columns:
+        column_height = GAME_SPRITES['column'][0].get_height()
+        #Verifica la colisión con las columnas de la parte alta
+        if(player_y < column_height + column['y'] and abs(player_x - column['x']) < GAME_SPRITES['column'][0].get_width()):
             GAME_SOUNDS['hit'].play()
             return True
-    for pipe in lower_pipes:
-        if (player_y + GAME_SPRITES['player'].get_height() > pipe['y']) and abs(player_x - pipe['x']) < GAME_SPRITES['pipe'][0].get_width():
+    for column in lower_columns:
+        #Verifica la colisión con las columnas de la parte baja
+        if (player_y + GAME_SPRITES['player'].get_height() > column['y']) and abs(player_x - column['x']) < GAME_SPRITES['column'][0].get_width():
             GAME_SOUNDS['hit'].play()
             return True
     return False
 
-
-def getRandomPipe():
-    pipe_height = GAME_SPRITES['pipe'][0].get_height()
+#Esta función se encarga de generar nuevas columnas en posiciones aleatorias
+def get_random_column():
+    column_height = GAME_SPRITES['column'][0].get_height()
     offset = SCREEN_HEIGHT / 4
     y2 = offset + random.randrange(0, int(SCREEN_HEIGHT - 1.2 * offset))
-    pipe_x = SCREEN_WIDTH + 10
-    y1 = pipe_height - y2 + offset
-    pipe = [
-        {'x': pipe_x, 'y': -y1},  # upper Pipe
-        {'x': pipe_x, 'y': y2}  # lower Pipe
+    column_x = SCREEN_WIDTH + 10
+    y1 = column_height - y2 + offset
+    column = [
+        {'x': column_x, 'y': -y1},  # columna parte alta
+        {'x': column_x, 'y': y2}  # columna parte baja
     ]
-    return pipe
+    return column
 
 
 if __name__ == "__main__":
-    # This will be the main point from where our game will start
-    pygame.init()  # Initialize all pygame's modules
+    # Función principal que inicializa el programa
+    pygame.init()  # Inicializa pygame y sus módulos
     FPSCLOCK = pygame.time.Clock()
     pygame.display.set_caption('Flappy Dove UdeA')
     GAME_SPRITES['numbers'] = (
@@ -194,14 +183,13 @@ if __name__ == "__main__":
         pygame.image.load('gallery/sprites/8.png').convert_alpha(),
         pygame.image.load('gallery/sprites/9.png').convert_alpha())
 
-    GAME_SPRITES['pipe'] = (pygame.transform.rotate(pygame.image.load(PIPE).convert_alpha(), 180), pygame.image.load(PIPE).convert_alpha())
-    GAME_SOUNDS['die'] = pygame.mixer.Sound('gallery/audio/die.wav')
+    GAME_SPRITES['column'] = (pygame.transform.rotate(pygame.image.load(
+        COLUMN).convert_alpha(), 180), pygame.image.load(COLUMN).convert_alpha())
     GAME_SOUNDS['hit'] = pygame.mixer.Sound('gallery/audio/hit.wav')
     GAME_SOUNDS['point'] = pygame.mixer.Sound('gallery/audio/point.wav')
-    GAME_SOUNDS['swoosh'] = pygame.mixer.Sound('gallery/audio/swoosh.wav')
     GAME_SPRITES['background'] = pygame.image.load(BACKGROUND).convert()
     GAME_SPRITES['player'] = pygame.image.load(PLAYER).convert_alpha()
 
     while True:
-        welcomeScreen()  # Shows welcome screen to the user until he presses a button
-        mainGame()  # This is the main game function
+        welcome_screen()  # Shows welcome screen to the user until he presses a button
+        main_game()  # This is the main game function
