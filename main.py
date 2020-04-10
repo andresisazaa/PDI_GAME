@@ -85,7 +85,7 @@ def main_game():
         if is_crashed:
             return
 
-        # check for score
+        # Verifica la posición del jugador y actualiza el puntaje
         player_mid_pos = player_x + GAME_SPRITES['player'].get_width() / 2
         for column in upper_columns:
             column_mid_pos = column['x'] + GAME_SPRITES['column'][0].get_width() / 2
@@ -95,23 +95,22 @@ def main_game():
         player_height = GAME_SPRITES['player'].get_height()
         player_y = player_y + player_vel_y
 
-        # move columns to the left
+        # Mueve las columnas hacia la izquierda
         for upper_column, lower_column in zip(upper_columns, lower_columns):
             upper_column['x'] += column_vel_x
             lower_column['x'] += column_vel_x
 
-        # Add a new column when the first is about to cross the leftmost part of the screen
+        # Agrega una nueva columna cunado la primera se está ocultando
         if 0 < upper_columns[0]['x'] < abs(column_vel_x) + 1:
             newcolumn = get_random_column()
             upper_columns.append(newcolumn[0])
             lower_columns.append(newcolumn[1])
 
-        # if the column is out of the screen, remove it
+        # Si la columna está fuera de la ventana, se remueve del arreglo
         if upper_columns[0]['x'] < -GAME_SPRITES['column'][0].get_width():
             upper_columns.pop(0)
             lower_columns.pop(0)
 
-        # Lets blit our sprites now
         SCREEN.blit(GAME_SPRITES['background'], (0, 0))
         for upper_column, lower_column in zip(upper_columns, lower_columns):
             SCREEN.blit(GAME_SPRITES['column'][0],
