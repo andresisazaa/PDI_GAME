@@ -21,8 +21,6 @@ while(1):
     # Encontrar el area de los objetos que detecta la camara
     moments = cv2.moments(mask)
     area = moments['m00']
-    # print('area', area)
-
     # Descomentar para ver el area por pantalla
     # print area
     if(area > 2000000):
@@ -32,8 +30,7 @@ while(1):
         y = int(moments['m01']/moments['m00'])
 
         # Mostramos sus coordenadas por pantalla
-        print("x = ", x)
-        print("y = ", y)
+        print(f"X: {x}, Y: {y}")
 
         # Dibujamos una marca en el centro del objeto
         cv2.rectangle(imagen, (x, y), (x+2, y+2), (0, 0, 255), 2)
