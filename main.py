@@ -59,7 +59,7 @@ def mainGame():
         {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': newPipe2[1]['y']}
     ]
 
-    pipe_vel_x = -8
+    pipe_vel_x = -9
     player_vel_y = 5
 
     while True:
