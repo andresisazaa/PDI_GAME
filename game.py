@@ -1,11 +1,13 @@
-import random
-import sys
-import pygame
-from pygame.locals import *
-import cv2
-import numpy as np
+#Importación de librerías necesarias
 
-# Variables Globales del juego
+import random #Se uliza random para generar un numero aleatorio
+import sys #Se utiliza para cerrar el programa
+import pygame #Se utiliza pygame para toda la funcionalidad del juego
+from pygame.locals import *
+import cv2 #Se utiliza openCV para el reconocimiento de la imagen mediante la cámara
+import numpy as np #Se utiliza numpy para apoyar el trabajo de openCV mediante las estructuras de datos
+
+# Variables globales del juego
 FPS = 60
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 500
@@ -25,7 +27,7 @@ def welcome_screen():
 
     while True:
         for event in pygame.event.get():
-            # Eventos para cerrar el juego
+            # Eventos para cerrar el juego, tecla ESC
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
@@ -41,14 +43,16 @@ def welcome_screen():
 
 #Función loop que ejecuta el juego
 def main_game():
-    score = 0
-    column_vel_x = -9
-    player_vel_y = 5
-    player_x = int(SCREEN_WIDTH / 5)
-    player_y = int(SCREEN_WIDTH / 2)
-    new_column1 = get_random_column()
-    new_column2 = get_random_column()
+    #Se inicializan las variables de cada partida
+    score = 0 #Puntuación inical
+    column_vel_x = -9 #Velocidad de las columnas del mapa (las columnas son los obstáculos)
+    player_vel_y = 5 #Velocidad con la que cae el jugador
+    player_x = int(SCREEN_WIDTH / 5) #Posición inicial del jugador en X
+    player_y = int(SCREEN_WIDTH / 2) #Posición inicial del jugador en Y
+    new_column1 = get_random_column() #Generador de la primera columna
+    new_column2 = get_random_column() #Generador de la segunda columna
 
+    #upper_columns y lower_columns son objetos que indican las posiciones de las primeras columnas
     upper_columns = [
         {'x': SCREEN_WIDTH + 150, 'y': new_column1[0]['y']},
         {'x': SCREEN_WIDTH + 150 + (SCREEN_WIDTH / 2), 'y': new_column2[0]['y']}
@@ -80,22 +84,24 @@ def main_game():
             player_y = y
             # Dibujamos una marca en el centro del objeto
             cv2.rectangle(imagen, (x, player_y), (x+2, player_y+2), (0, 0, 255), 2)
-
+        #is_crashed es un valor booleano que indica si el jugador colisionó
         is_crashed = check_collide(player_x, player_y, upper_columns, lower_columns)
         if is_crashed:
             return
 
-        # Verifica la posición del jugador y actualiza el puntaje
+        # Verifica la posición del jugador y la de la columna
         player_mid_pos = player_x + GAME_SPRITES['player'].get_width() / 3
         for column in upper_columns:
             column_mid_pos = column['x'] + GAME_SPRITES['column'][0].get_width() / 3
+            #Si el jugador pasa la columna se actualiza el puntaje y se reproduce un sonido
             if column_mid_pos <= player_mid_pos < column_mid_pos + 10:
                 score += 1
                 GAME_SOUNDS['point'].play()
         player_height = GAME_SPRITES['player'].get_height()
+        #Actualización de la posición y del jugador si no se detecta movimiento
         player_y = player_y + player_vel_y
 
-        # Mueve las columnas hacia la izquierda
+        # Movimiento de columnas las columnas hacia la izquierda
         for upper_column, lower_column in zip(upper_columns, lower_columns):
             upper_column['x'] += column_vel_x
             lower_column['x'] += column_vel_x
@@ -106,7 +112,7 @@ def main_game():
             upper_columns.append(newcolumn[0])
             lower_columns.append(newcolumn[1])
 
-        # Si la columna está fuera de la ventana, se remueve del arreglo
+        # Si la columna está fuera de la ventana, se remueve del arreglo de columnas
         if upper_columns[0]['x'] < -GAME_SPRITES['column'][0].get_width():
             upper_columns.pop(0)
             lower_columns.pop(0)
@@ -119,6 +125,7 @@ def main_game():
                         (lower_column['x'], lower_column['y']))
 
         SCREEN.blit(GAME_SPRITES['player'], (player_x, player_y))
+        #Actualización de puntaje en pantalla
         my_digits = [int(x) for x in list(str(score))]
         width = 0
         for digit in my_digits:
@@ -170,6 +177,7 @@ if __name__ == "__main__":
     pygame.init()  # Inicializa pygame y sus módulos
     FPSCLOCK = pygame.time.Clock()
     pygame.display.set_caption('Flappy Dove UdeA')
+    #Se le indica a pygame que utilice las imagenes contenidas en la carpeta assets
     GAME_SPRITES['numbers'] = (
         pygame.image.load('assets/sprites/0.png').convert_alpha(),
         pygame.image.load('assets/sprites/1.png').convert_alpha(),
@@ -181,14 +189,15 @@ if __name__ == "__main__":
         pygame.image.load('assets/sprites/7.png').convert_alpha(),
         pygame.image.load('assets/sprites/8.png').convert_alpha(),
         pygame.image.load('assets/sprites/9.png').convert_alpha())
-
+    #Transformación de rotación sobre la columna
     GAME_SPRITES['column'] = (pygame.transform.rotate(pygame.image.load(
         COLUMN).convert_alpha(), 180), pygame.image.load(COLUMN).convert_alpha())
+    #Sonidos utilizados por el juego
     GAME_SOUNDS['hit'] = pygame.mixer.Sound('assets/audio/hit.wav')
     GAME_SOUNDS['point'] = pygame.mixer.Sound('assets/audio/point.wav')
     GAME_SPRITES['background'] = pygame.image.load(BACKGROUND).convert()
     GAME_SPRITES['player'] = pygame.image.load(PLAYER).convert_alpha()
 
     while True:
-        welcome_screen()  # Shows welcome screen to the user until he presses a button
-        main_game()  # This is the main game function
+        welcome_screen()  # Ejecución de la pantalla de bienvenida
+        main_game()  # Ejecución del juego
