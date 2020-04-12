@@ -42,7 +42,7 @@ def welcome_screen():
 #Función loop que ejecuta el juego
 def main_game():
     score = 0
-    column_vel_x = -8
+    column_vel_x = -9
     player_vel_y = 5
     player_x = int(SCREEN_WIDTH / 5)
     player_y = int(SCREEN_WIDTH / 2)
@@ -86,10 +86,10 @@ def main_game():
             return
 
         # Verifica la posición del jugador y actualiza el puntaje
-        player_mid_pos = player_x + GAME_SPRITES['player'].get_width() / 2
+        player_mid_pos = player_x + GAME_SPRITES['player'].get_width() / 3
         for column in upper_columns:
-            column_mid_pos = column['x'] + GAME_SPRITES['column'][0].get_width() / 2
-            if column_mid_pos <= player_mid_pos < column_mid_pos + 4:
+            column_mid_pos = column['x'] + GAME_SPRITES['column'][0].get_width() / 3
+            if column_mid_pos <= player_mid_pos < column_mid_pos + 10:
                 score += 1
                 GAME_SOUNDS['point'].play()
         player_height = GAME_SPRITES['player'].get_height()
@@ -154,7 +154,7 @@ def check_collide(player_x, player_y, upper_columns, lower_columns):
 #Esta función se encarga de generar nuevas columnas en posiciones aleatorias
 def get_random_column():
     column_height = GAME_SPRITES['column'][0].get_height()
-    offset = SCREEN_HEIGHT / 4
+    offset = SCREEN_HEIGHT / 5
     y2 = offset + random.randrange(0, int(SCREEN_HEIGHT - 1.2 * offset))
     column_x = SCREEN_WIDTH + 10
     y1 = column_height - y2 + offset
